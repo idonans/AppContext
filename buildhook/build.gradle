@@ -24,9 +24,4 @@ android {
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
-    api rootProject.ext.bcfg.deps.androidx_appcompat
-    compileOnly project(':buildhook')
 }
-
-// apply from: ('bintray.gradle')
-apply from: ('mavenLocal.gradle')

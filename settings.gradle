@@ -1,1 +1,1 @@
-include ':app', ':appcontext'
+include ':app', ':appcontext', ':buildhook'

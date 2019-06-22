@@ -1,7 +1,10 @@
 package com.idonans.appcontext;
 
+import android.app.ActivityThread;
 import android.app.Application;
 import android.content.Context;
+
+import androidx.annotation.Nullable;
 
 public class AppContext {
 
@@ -36,10 +39,23 @@ public class AppContext {
 
     public static Context getContext() {
         if (sContext == null) {
+            sContext = getActivityThreadApplication();
+        }
+        if (sContext == null) {
             Throwable e = new IllegalAccessError("AppContext not set. first call AppContext#setContext on Application#onCreate");
             e.printStackTrace();
         }
         return sContext;
+    }
+
+    @Nullable
+    private static Context getActivityThreadApplication() {
+        try {
+            return ActivityThread.currentApplication();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

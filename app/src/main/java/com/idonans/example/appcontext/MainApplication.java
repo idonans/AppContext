@@ -11,7 +11,9 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        AppContext.setContext(this);
+
+        // AppContext will try use ActivityThread's Application instance
+        // AppContext.setContext(this);
 
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
