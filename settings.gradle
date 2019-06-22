@@ -1,1 +1,1 @@
-include ':app', ':appContext'
+include ':app', ':appcontext'
