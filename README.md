@@ -1,9 +1,8 @@
-# AppContext
-Android global application context holder
+[ ![Download](https://api.bintray.com/packages/idonans/maven/appcontext/images/download.svg) ](https://bintray.com/idonans/maven/appcontext/_latestVersion)
 
 ```groovy
 
-    implementation 'com.idonans.appcontext:appcontext:1.0.3'
+    implementation 'com.idonans.appcontext:appcontext:$latestVersion'
 
 ```
 
