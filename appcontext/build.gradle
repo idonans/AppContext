@@ -7,8 +7,11 @@ android {
     defaultConfig {
         minSdkVersion rootProject.ext.bcfg.ver.min_sdk
         targetSdkVersion rootProject.ext.bcfg.ver.target_sdk
-        versionCode 1
-        versionName "1.0"
+        versionCode rootProject.ext.bcfg.ver.versionCode
+        versionName rootProject.ext.bcfg.ver.versionName
+        buildConfigField("String", "LIB_NAME", "\"AppContext\"")
+        buildConfigField("int", "LIB_VERSION_CODE", "$versionCode")
+        buildConfigField("String", "LIB_VERSION_NAME", "\"$versionName\"")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
