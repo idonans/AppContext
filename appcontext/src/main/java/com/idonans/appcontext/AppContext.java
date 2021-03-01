@@ -1,5 +1,6 @@
 package com.idonans.appcontext;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.content.Context;
@@ -11,6 +12,7 @@ public class AppContext {
     private AppContext() {
     }
 
+    @SuppressLint("StaticFieldLeak")
     private static Context sContext;
 
     public static void setContext(Context context) {
