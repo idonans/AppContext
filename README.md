@@ -3,7 +3,7 @@ Android global application context holder
 
 ```groovy
 
-    implementation 'com.idonans.appcontext:appcontext:0.1.4'
+    implementation 'com.idonans.appcontext:appcontext:1.0.0'
 
 ```
 
