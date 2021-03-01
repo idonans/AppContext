@@ -7,6 +7,9 @@ import androidx.annotation.Nullable;
 
 /**
  * Lib 内的统一日志输出
+ *
+ * @author idonans
+ * @version 1.0
  */
 public final class LibLog {
 
