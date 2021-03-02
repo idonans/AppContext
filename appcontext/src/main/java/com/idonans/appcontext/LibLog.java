@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
  * Lib 内的统一日志输出
  *
  * @author idonans
- * @version 1.0
+ * @version 1.1
  */
 public final class LibLog {
 
@@ -17,7 +17,17 @@ public final class LibLog {
      * 日志打印级别, 默认 {@linkplain Log#ERROR}
      */
     private static int LOG_LEVEL = Log.ERROR;
-    private static final String LOG_TAG = BuildConfig.LIB_NAME + "_" + BuildConfig.LIB_VERSION_NAME + "(" + BuildConfig.LIB_VERSION_CODE + ")";
+    private static final String LOG_TAG;
+
+    static {
+        final String logTag = BuildConfig.LIB_NAME + "_" + BuildConfig.LIB_VERSION_NAME + "(" + BuildConfig.LIB_VERSION_CODE + ")";
+        final int length = logTag.length();
+        if (length > 23) {
+            LOG_TAG = logTag.substring(0, 23);
+        } else {
+            LOG_TAG = logTag;
+        }
+    }
 
     /**
      * 设置日志级别，可取值为 {@linkplain Log#ERROR}, {@linkplain Log#WARN}, {@linkplain Log#INFO},
