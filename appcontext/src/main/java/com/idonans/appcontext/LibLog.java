@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
  * @author idonans
  * @version 1.1
  */
-public final class LibLog {
+public class LibLog {
 
     /**
      * 日志打印级别, 默认 {@linkplain Log#ERROR}
