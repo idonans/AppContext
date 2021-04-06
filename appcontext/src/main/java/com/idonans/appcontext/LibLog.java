@@ -9,43 +9,29 @@ import androidx.annotation.Nullable;
  * Lib 内的统一日志输出
  *
  * @author idonans
- * @version 1.1
+ * @version 1.2
  */
 public class LibLog {
 
-    /**
-     * 日志打印级别, 默认 {@linkplain Log#ERROR}
-     */
-    private static int LOG_LEVEL = Log.ERROR;
-    private static final String LOG_TAG;
-
-    static {
-        final String logTag = BuildConfig.LIB_NAME + "_" + BuildConfig.LIB_VERSION_NAME + "(" + BuildConfig.LIB_VERSION_CODE + ")";
-        final int length = logTag.length();
-        if (length > 23) {
-            LOG_TAG = logTag.substring(0, 23);
-        } else {
-            LOG_TAG = logTag;
-        }
-    }
+    private static final InternalLibLog INTERNAL_LIB_LOG = new InternalLibLog(
+            BuildConfig.LIB_NAME,
+            BuildConfig.LIB_VERSION_NAME,
+            BuildConfig.LIB_VERSION_CODE
+    );
 
     /**
      * 设置日志级别，可取值为 {@linkplain Log#ERROR}, {@linkplain Log#WARN}, {@linkplain Log#INFO},
      * {@linkplain Log#DEBUG}, {@linkplain Log#VERBOSE}
      */
     public static void setLogLevel(int logLevel) {
-        LOG_LEVEL = logLevel;
+        INTERNAL_LIB_LOG.setLogLevel(logLevel);
     }
 
     /**
      * 获取当前日志级别
      */
     public static int getLogLevel() {
-        return LOG_LEVEL;
-    }
-
-    private static boolean isLoggable(int logLevel) {
-        return logLevel >= LOG_LEVEL;
+        return INTERNAL_LIB_LOG.getLogLevel();
     }
 
     public static void v(@Nullable String msg, Object... args) {
@@ -57,15 +43,7 @@ public class LibLog {
     }
 
     public static void v(@Nullable Throwable e, @Nullable String msg, Object... args) {
-        if (!isLoggable(Log.VERBOSE)) {
-            return;
-        }
-        if (e != null) {
-            Log.v(LOG_TAG, formatMessage(msg, args), e);
-            return;
-        }
-
-        Log.v(LOG_TAG, formatMessage(msg, args));
+        INTERNAL_LIB_LOG.print(Log.VERBOSE, e, msg, args);
     }
 
     public static void d(@Nullable String msg, Object... args) {
@@ -77,15 +55,7 @@ public class LibLog {
     }
 
     public static void d(@Nullable Throwable e, @Nullable String msg, Object... args) {
-        if (!isLoggable(Log.DEBUG)) {
-            return;
-        }
-        if (e != null) {
-            Log.d(LOG_TAG, formatMessage(msg, args), e);
-            return;
-        }
-
-        Log.d(LOG_TAG, formatMessage(msg, args));
+        INTERNAL_LIB_LOG.print(Log.DEBUG, e, msg, args);
     }
 
     public static void i(@Nullable String msg, Object... args) {
@@ -97,15 +67,7 @@ public class LibLog {
     }
 
     public static void i(@Nullable Throwable e, @Nullable String msg, Object... args) {
-        if (!isLoggable(Log.INFO)) {
-            return;
-        }
-        if (e != null) {
-            Log.i(LOG_TAG, formatMessage(msg, args), e);
-            return;
-        }
-
-        Log.i(LOG_TAG, formatMessage(msg, args));
+        INTERNAL_LIB_LOG.print(Log.INFO, e, msg, args);
     }
 
     public static void w(@Nullable String msg, Object... args) {
@@ -117,15 +79,7 @@ public class LibLog {
     }
 
     public static void w(@Nullable Throwable e, @Nullable String msg, Object... args) {
-        if (!isLoggable(Log.WARN)) {
-            return;
-        }
-        if (e != null) {
-            Log.w(LOG_TAG, formatMessage(msg, args), e);
-            return;
-        }
-
-        Log.w(LOG_TAG, formatMessage(msg, args));
+        INTERNAL_LIB_LOG.print(Log.WARN, e, msg, args);
     }
 
     public static void e(@Nullable String msg, Object... args) {
@@ -137,26 +91,96 @@ public class LibLog {
     }
 
     public static void e(@Nullable Throwable e, @Nullable String msg, Object... args) {
-        if (!isLoggable(Log.ERROR)) {
-            return;
-        }
-        if (e != null) {
-            Log.e(LOG_TAG, formatMessage(msg, args), e);
-            return;
-        }
-
-        Log.e(LOG_TAG, formatMessage(msg, args));
+        INTERNAL_LIB_LOG.print(Log.ERROR, e, msg, args);
     }
 
-    @NonNull
-    private static String formatMessage(@Nullable String msg, Object... args) {
-        if (msg == null) {
-            return "null";
+    /**
+     * Lib 内的统一日志输出
+     *
+     * @author idonans
+     * @version 1.2
+     */
+    private static class InternalLibLog {
+
+        /**
+         * 日志打印级别, 默认 {@linkplain Log#ERROR}
+         */
+        private int mLogLevel = Log.ERROR;
+        private final String mLogTag;
+
+        private InternalLibLog(final String libName, String libVersionName, int libVersionCode) {
+            final String logTag = libName + "_" + libVersionName + "(" + libVersionCode + ")";
+            final int length = logTag.length();
+            if (length > 23) {
+                mLogTag = logTag.substring(0, 23);
+            } else {
+                mLogTag = logTag;
+            }
         }
-        if (args != null) {
-            return String.format(msg, args);
+
+        /**
+         * 设置日志级别，可取值为 {@linkplain Log#ERROR}, {@linkplain Log#WARN}, {@linkplain Log#INFO},
+         * {@linkplain Log#DEBUG}, {@linkplain Log#VERBOSE}
+         */
+        public void setLogLevel(int logLevel) {
+            mLogLevel = logLevel;
         }
-        return msg;
+
+        /**
+         * 获取当前日志级别
+         */
+        public int getLogLevel() {
+            return mLogLevel;
+        }
+
+        private boolean isLoggable(int logLevel) {
+            return logLevel >= mLogLevel;
+        }
+
+        private void print(int logLevel, @Nullable Throwable e, @Nullable String msg, Object... args) {
+            if (!isLoggable(logLevel)) {
+                return;
+            }
+
+            if (e != null) {
+                if (logLevel <= Log.VERBOSE) {
+                    Log.v(mLogTag, formatMessage(msg, args), e);
+                } else if (logLevel <= Log.DEBUG) {
+                    Log.d(mLogTag, formatMessage(msg, args), e);
+                } else if (logLevel <= Log.INFO) {
+                    Log.i(mLogTag, formatMessage(msg, args), e);
+                } else if (logLevel <= Log.WARN) {
+                    Log.w(mLogTag, formatMessage(msg, args), e);
+                } else {
+                    Log.e(mLogTag, formatMessage(msg, args), e);
+                }
+                return;
+            }
+
+            if (logLevel <= Log.VERBOSE) {
+                Log.v(mLogTag, formatMessage(msg, args));
+            } else if (logLevel <= Log.DEBUG) {
+                Log.d(mLogTag, formatMessage(msg, args));
+            } else if (logLevel <= Log.INFO) {
+                Log.i(mLogTag, formatMessage(msg, args));
+            } else if (logLevel <= Log.WARN) {
+                Log.w(mLogTag, formatMessage(msg, args));
+            } else {
+                Log.e(mLogTag, formatMessage(msg, args));
+            }
+        }
+
+        @NonNull
+        private String formatMessage(@Nullable String msg, Object... args) {
+            if (msg == null) {
+                return "null";
+            }
+            if (args != null) {
+                return String.format(msg, args);
+            }
+            return msg;
+        }
+
     }
 
 }
