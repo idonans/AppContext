@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.idonans.appcontext.AppContext;
+import io.github.idonans.appcontext.AppContext;
 
 import timber.log.Timber;
 

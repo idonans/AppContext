@@ -1,4 +1,4 @@
-package com.idonans.appcontext;
+package io.github.idonans.appcontext;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;

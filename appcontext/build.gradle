@@ -31,5 +31,4 @@ dependencies {
     compileOnly project(':buildhook')
 }
 
-// apply from: ('bintray.gradle')
-apply from: ('mavenLocal.gradle')
+apply from: rootProject.file('gradle-mvn-push.gradle')

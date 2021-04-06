@@ -1,4 +1,4 @@
-package com.idonans.appcontext;
+package io.github.idonans.appcontext;
 
 import android.util.Log;
 
