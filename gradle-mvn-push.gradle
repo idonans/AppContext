@@ -16,6 +16,10 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
+tasks.withType(Javadoc) {
+    options.encoding = "UTF-8"
+}
+
 version = rootProject.ext.bcfg.ver.versionName
 group = GROUP
 
