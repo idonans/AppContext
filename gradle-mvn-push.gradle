@@ -13,145 +13,108 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply plugin: 'maven-publish'
+
+apply plugin: 'maven'
 apply plugin: 'signing'
 
 tasks.withType(Javadoc) {
     options.encoding = "UTF-8"
 }
 
-version = rootProject.ext.bcfg.ver.versionName
-group = GROUP
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
 
 def isReleaseBuild() {
     return rootProject.ext.bcfg.ver.versionName.contains("SNAPSHOT") == false
 }
 
-def getReleaseRepositoryUrl() {
-    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-}
-
-def getSnapshotRepositoryUrl() {
-    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-}
-
 def getRepositoryUsername() {
-    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+    return hasProperty('SONATYPE_NEXUS_USERNAME') ? SONATYPE_NEXUS_USERNAME : ""
 }
 
 def getRepositoryPassword() {
-    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
-}
-
-def configurePom(pom) {
-    pom.name = POM_NAME
-    pom.packaging = POM_PACKAGING
-    pom.description = POM_DESCRIPTION
-    pom.url = POM_URL
-
-    pom.scm {
-        url = POM_SCM_URL
-        connection = POM_SCM_CONNECTION
-        developerConnection = POM_SCM_DEV_CONNECTION
-    }
-
-    pom.licenses {
-        license {
-            name = POM_LICENCE_NAME
-            url = POM_LICENCE_URL
-            distribution = POM_LICENCE_DIST
-        }
-    }
-
-    pom.developers {
-        developer {
-            id = POM_DEVELOPER_ID
-            name = POM_DEVELOPER_NAME
-        }
-    }
+    return hasProperty('SONATYPE_NEXUS_PASSWORD') ? SONATYPE_NEXUS_PASSWORD : ""
 }
 
 afterEvaluate { project ->
-    publishing {
+    uploadArchives {
         repositories {
-            maven {
-                def releasesRepoUrl = getReleaseRepositoryUrl()
-                def snapshotsRepoUrl = getSnapshotRepositoryUrl()
-                url = isReleaseBuild() ? releasesRepoUrl : snapshotsRepoUrl
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-                credentials(PasswordCredentials) {
-                    username = getRepositoryUsername()
-                    password = getRepositoryPassword()
+                pom.groupId = GROUP
+                pom.artifactId = POM_ARTIFACT_ID
+                pom.version = rootProject.ext.bcfg.ver.versionName
+
+                repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                }
+                snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                }
+
+                pom.project {
+                    name POM_NAME
+                    packaging POM_PACKAGING
+                    description POM_DESCRIPTION
+                    url POM_URL
+
+                    scm {
+                        url POM_SCM_URL
+                        connection POM_SCM_CONNECTION
+                        developerConnection POM_SCM_DEV_CONNECTION
+                    }
+
+                    licenses {
+                        license {
+                            name POM_LICENCE_NAME
+                            url POM_LICENCE_URL
+                            distribution POM_LICENCE_DIST
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id POM_DEVELOPER_ID
+                            name POM_DEVELOPER_NAME
+                        }
+                    }
                 }
             }
         }
     }
 
-    if (project.getPlugins().hasPlugin('com.android.application') ||
-            project.getPlugins().hasPlugin('com.android.library')) {
+    signing {
+        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
 
-        task androidJavadocs(type: Javadoc) {
-            source = android.sourceSets.main.java.source
-            classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-            excludes = ['**/*.kt']
+    task androidJavadocs(type: Javadoc) {
+        if (!project.plugins.hasPlugin('kotlin-android')) {
+            source = android.sourceSets.main.java.srcDirs
         }
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        exclude '**/internal/*'
+        include '**/*.java'
 
-        task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-            archiveClassifier.set('javadoc')
-            from androidJavadocs.destinationDir
-        }
-
-        task androidSourcesJar(type: Jar) {
-            archiveClassifier.set('sources')
-            from android.sourceSets.main.java.source
+        if (JavaVersion.current().isJava8Compatible()) {
+            options.addStringOption('Xdoclint:none', '-quiet')
         }
     }
 
-    if (JavaVersion.current().isJava8Compatible()) {
-        allprojects {
-            tasks.withType(Javadoc) {
-                options.addStringOption('Xdoclint:none', '-quiet')
-            }
-        }
+    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+        classifier = 'javadoc'
+        from androidJavadocs.destinationDir
     }
 
-    if (JavaVersion.current().isJava9Compatible()) {
-        allprojects {
-            tasks.withType(Javadoc) {
-                options.addBooleanOption('html5', true)
-            }
-        }
+    task androidSourcesJar(type: Jar) {
+        classifier = 'sources'
+        from android.sourceSets.main.java.source
     }
 
     artifacts {
-        if (project.getPlugins().hasPlugin('com.android.application') ||
-                project.getPlugins().hasPlugin('com.android.library')) {
-            archives androidSourcesJar
-            archives androidJavadocsJar
-        }
-    }
-
-    android.libraryVariants.all { variant ->
-        tasks.androidJavadocs.doFirst {
-            classpath += files(variant.javaCompileProvider.get().classpath.files.join(File.pathSeparator))
-        }
-    }
-
-    publishing.publications.all { publication ->
-        publication.groupId = GROUP
-        publication.version = rootProject.ext.bcfg.ver.versionName
-
-        publication.artifact androidSourcesJar
-        publication.artifact androidJavadocsJar
-
-        configurePom(publication.pom)
-    }
-
-    signing {
-        publishing.publications.all { publication ->
-            sign publication
-        }
+        archives androidSourcesJar
+        archives androidJavadocsJar
     }
 }
