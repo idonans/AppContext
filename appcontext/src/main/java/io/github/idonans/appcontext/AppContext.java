@@ -22,7 +22,7 @@ public class AppContext {
 
         if (context == null) {
             Throwable e = new IllegalArgumentException("invalid context, context is null");
-            LibLog.e(e);
+            AppContextLog.e(e);
             return;
         }
 
@@ -32,7 +32,7 @@ public class AppContext {
 
         if (!(context instanceof Application)) {
             Throwable e = new IllegalArgumentException("application not found from context " + context);
-            LibLog.e(e);
+            AppContextLog.e(e);
             return;
         }
 
@@ -45,7 +45,7 @@ public class AppContext {
         }
         if (sContext == null) {
             Throwable e = new IllegalAccessError("AppContext not set. first call AppContext#setContext on Application#onCreate");
-            LibLog.e(e);
+            AppContextLog.e(e);
         }
         return sContext;
     }
@@ -55,7 +55,7 @@ public class AppContext {
         try {
             return ActivityThread.currentApplication();
         } catch (Throwable e) {
-            LibLog.e(e);
+            AppContextLog.e(e);
         }
         return null;
     }

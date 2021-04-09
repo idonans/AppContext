@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
  * @author idonans
  * @version 1.2
  */
-public class LibLog {
+public class AppContextLog {
 
     private static final InternalLibLog INTERNAL_LIB_LOG = new InternalLibLog(
             BuildConfig.LIB_NAME,
