@@ -1,13 +1,10 @@
-[ ![Download](https://api.bintray.com/packages/idonans/maven/appcontext/images/download.svg) ](https://bintray.com/idonans/maven/appcontext/_latestVersion)
+AppContext
+==========
+
+Releases
+--------
+The latest release is available on [Maven Central](https://search.maven.org/artifact/io.github.idonans.appcontext/appcontext).
 
 ```groovy
-
-    implementation 'com.idonans.appcontext:appcontext:$latestVersion'
-
-```
-
-```java
-
-    Context context = AppContext.getContext();
-
+    implementation 'io.github.idonans.appcontext:appcontext:$latestVersion'
 ```
